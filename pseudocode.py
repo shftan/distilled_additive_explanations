@@ -13,11 +13,11 @@ percentage_train = 0.70
 # Load data and split
 all_data = load_data()
 test, trainval = train_test_split(
-	all_data,
-	test_size=percentage_test,
-	train_size=(percentage_val + percentage_train),
-	random_state=0,
-	shuffle=True
+    all_data,
+    test_size=percentage_test,
+    train_size=(percentage_val + percentage_train),
+    random_state=0,
+    shuffle=True
 )
 
 # Is this a classification task, or a regression task? 
@@ -38,25 +38,25 @@ num_layers = 2
 
 # Train black-box model
 model, model_parameters = train_crossvalidated_model(
-	estimator=MLP,
+    estimator=MLP,
     loss=loss,
-	data=trainval.data,
-	labels=trainval.labels,
-	num_folds=5,
-	val_size=percentage_val / (percentage_train + percentage_val),
-	estimator_cv_parameters={
-		"max_epochs":200,
-		"early_stopping": True,
-		"num_layers": num_layers,
-		"num_hidden_units": [8, 16, 32, 64, 128, 256],
-		"p_dropout": [0, 0.1, 0.2, 0.3, 0.4, 0.5],
-		"learning_rate": [1e-2, 1e-3, 1e-4, 1e-5] + 5 * [ 1e-2, 1e-3, 1e-4, 1e-5],
-		"weight_decay": [1e-2, 1e-3, 1e-4, 1e-5, 1e-6] + 5 * [1e-2, 1e-3, 1e-4, 1e-5, 1e-6],
-		"batch_size": [8, 16, 32, 64, 128, 256]
+    data=trainval.data,
+    labels=trainval.labels,
+    num_folds=5,
+    val_size=percentage_val / (percentage_train + percentage_val),
+    estimator_cv_parameters={
+        "max_epochs":200,
+        "early_stopping": True,
+        "num_layers": num_layers,
+        "num_hidden_units": [8, 16, 32, 64, 128, 256],
+        "p_dropout": [0, 0.1, 0.2, 0.3, 0.4, 0.5],
+        "learning_rate": [1e-2, 1e-3, 1e-4, 1e-5] + 5 * [ 1e-2, 1e-3, 1e-4, 1e-5],
+        "weight_decay": [1e-2, 1e-3, 1e-4, 1e-5, 1e-6] + 5 * [1e-2, 1e-3, 1e-4, 1e-5, 1e-6],
+        "batch_size": [8, 16, 32, 64, 128, 256]
     },    
-	search_strategy="random_search",
+    search_strategy="random_search",
     metric=metric,
-	num_tries=100
+    num_tries=100
 )
 
 # Measure performance of model:
@@ -82,26 +82,26 @@ print(f"Performance of black box model: {performance:.2f}")
 # The goal here is to obtain the optimal parameters, we will retrain more student models later.
 trainval_predictions = model.predict(trainval.data)
 student, student_parameters = train_crossvalidated_model(
-	estimator=ExplainableBoostingRegressor,
+    estimator=ExplainableBoostingRegressor,
     loss=RMSE,
-	data=trainval.data,
-	labels=trainval_predictions,
-	num_folds=5,
-	val_size=percentage_val / (percentage_train + percentage_val),
-	estimator_cv_parameters={
-		"interactions": 0,
+    data=trainval.data,
+    labels=trainval_predictions,
+    num_folds=5,
+    val_size=percentage_val / (percentage_train + percentage_val),
+    estimator_cv_parameters={
+        "interactions": 0,
         "max_rounds": [100, 1000, 5000],
-		"max_bins": [128, 256, 512],
+        "max_bins": [128, 256, 512],
     },
-	search_strategy="random_search",
+    search_strategy="random_search",
     metric=metric,
-	num_tries=10
+    num_tries=10
 )
 
 # Train different student models using different train/val partitions and average results.
 results = []
 for seed in range(5):
-	# Split data according to seed
+    # Split data according to seed
     val, train = train_test_split(
         trainval, 
         test_size=percentage_val / (percentage_train + percentage_val), 
