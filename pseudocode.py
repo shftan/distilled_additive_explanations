@@ -122,7 +122,7 @@ for seed in range(5):
         model=student,
         data=test.data, 
         labels=test.labels,
-        metric=RMSE
+        metric=metric
     )
     results.append(student_performance)
 
